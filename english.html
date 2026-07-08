@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>あっきーさんの専用英語ルーム</title>
     
-    <!-- PWA設定 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="AkkyEnglish">
@@ -266,7 +265,6 @@
 
     <div class="container">
         
-        <!-- 1. 英会話チャット画面 -->
         <div id="page-chat" class="page active">
             <div class="card">
                 <h2>🐢 再生スピードを選択</h2>
@@ -285,7 +283,7 @@
                 </div>
 
                 <div class="chat-container" id="chat-box">
-                    <div class="msg ai" id="welcome-msg">Hi Akky! Welcome to your room. Let's practice English together at your own pace! 🌸</div>
+                    <div class="msg ai" id="welcome-msg">Hey Akky! Great to see you here. Let's chat and have some fun in English! What's on your mind today? ☕✨</div>
                 </div>
 
                 <div style="display:flex; gap:6px; margin-bottom: 6px;">
@@ -298,7 +296,6 @@
             </div>
         </div>
 
-        <!-- 2. これ英語でなんて言う？＆引用練習画面 -->
         <div id="page-story" class="page">
             <div class="card">
                 <h2>📝 つぶやき日記・セリフ引用・教材を英語にする</h2>
@@ -319,7 +316,6 @@
                 <div style="font-size:0.85rem; color:var(--text-muted); margin-top:10px;">💡 日本語のずぼら解説:</div>
                 <div id="story-explanation-output" class="explanation-box"></div>
 
-                <!-- 💬 ニュアンス違いの相談窓口チャット -->
                 <div style="margin-top:20px; border-top:1px dashed #444; padding-top:15px;">
                     <span style="font-size:0.85rem; color:var(--primary-color); font-weight:bold;">💬 表現のニュアンスを先生に相談する</span>
                     <div id="story-chat-box" style="display:flex; flex-direction:column; gap:8px; background:#161616; padding:10px; border-radius:8px; margin:8px 0; max-height:200px; overflow-y:auto; font-size:0.9rem;">
@@ -338,7 +334,6 @@
             </div>
         </div>
 
-        <!-- 3. マイフレーズ帳 -->
         <div id="page-phrases" class="page">
             <div class="card">
                 <h2>📌 お気に入りフレーズ帳</h2>
@@ -346,7 +341,6 @@
             </div>
         </div>
 
-        <!-- 4. 設定画面 -->
         <div id="page-settings" class="page">
             <div class="card">
                 <h2>🔑 AIの鍵設定（家計簿と同じキーでOK！）</h2>
@@ -381,7 +375,6 @@
 
     </div>
 
-    <!-- ナビバー -->
     <div class="nav-bar">
         <div class="nav-item active" onclick="switchTab('chat', this);"><span class="nav-icon">🗣️</span>チャット</div>
         <div class="nav-item" onclick="switchTab('story', this);"><span class="nav-icon">📝</span>これ英語で？</div>
@@ -393,7 +386,7 @@
         let ChatHistory = [];
         let StoryConsultHistory = []; 
         let PhraseBook = JSON.parse(localStorage.getItem('oru_phrases')) || [];
-        let lastAiEnglishText = "Hi Akky! Welcome to your room. Let's practice English together at your own pace!";
+        let lastAiEnglishText = "Hey Akky! Great to see you here. Let's chat and have some fun in English! What's on your mind today?";
         let currentSpeechRate = 0.60;
 
         let recognition = null;
@@ -605,13 +598,16 @@
             }
         }
 
+        // ✨ プロンプトを大改造：お堅い「先生」を廃止し、Geminiの音声チャット（Liveモード）に近い超自然なアメリカの親友へ変更！
         const BASE_PROMPT = 
-            "You are a kind, encouraging American English coach for Akky, a beginner learner (A1-A2 level).\n" +
+            "You are a close, super-friendly American friend chatting with Akky, a beginner English learner.\n" +
+            "YOUR PERSONALITY:\n" +
+            "- You are a warm, casual, and energetic buddy (like Gemini Live voice mode!). Never sound like a rigid textbook teacher.\n" +
+            "- Use natural everyday responses, cheerful reactions, and simple slang if appropriate (e.g., 'Oh, nice!', 'Totally!', 'Sounds fun!', 'No worries!').\n" +
             "CRITICAL RULES:\n" +
-            "1. Keep your English responses short, simple, and clean (maximum 2 short sentences).\n" +
-            "2. Never be too strict about pronunciation or minor grammar. If it's about 80% understandable, praise Akky and keep the conversation flowing smoothly!\n" +
-            "3. If you want to give a small feedback on pronunciation, just mention it gently in the Japanese section at the very end. Never block the conversation.\n" +
-            "4. At the very end of your response, always provide a brief Japanese section titled [日本語の解説] explaining key idioms or easy pronunciation tips using phonetic symbols (IPA).";
+            "1. Keep your English short and punchy (1-2 sentences maximum) so Akky can easily reply.\n" +
+            "2. Never strictly correct minor grammar. Keep the conversation flowing like a fun real chat!\n" +
+            "3. At the very end of your response, always add a casual, friendly Japanese tip section titled [あっきーへのプチ解説]. Share natural native nuances or easy pronunciation tips using phonetic symbols (IPA) in a supportive, peer-to-peer style.";
 
         async function suggestTheme() {
             resetIdleTimer();
@@ -646,9 +642,11 @@
             let contextPrompt = BASE_PROMPT;
             if(theme) contextPrompt += `\n[Current Theme]: ${theme}`;
 
+            // 会話が長くなっても最初のフレンドリーな設定（contextPrompt）を先頭にキープして送信します
             let contentsPayload = [{ role: 'user', parts: [{ text: contextPrompt }] }];
             
-            ChatHistory.forEach(msg => {
+            const recentHistory = ChatHistory.slice(-8);
+            recentHistory.forEach(msg => {
                 contentsPayload.push({ 
                     role: msg.role === 'user' ? 'user' : 'model', 
                     parts: [{ text: msg.text }] 
@@ -677,9 +675,9 @@
 
                 ChatHistory.push({ role: 'user', text: userText });
                 ChatHistory.push({ role: 'model', text: aiReply });
-                if(ChatHistory.length > 10) ChatHistory.shift();
+                if(ChatHistory.length > 20) ChatHistory.shift();
 
-                const splitIndex = aiReply.indexOf("[日本語");
+                const splitIndex = aiReply.indexOf("[あっきーへの");
                 lastAiEnglishText = splitIndex !== -1 ? aiReply.substring(0, splitIndex) : aiReply;
 
                 playVoice(lastAiEnglishText);
@@ -741,7 +739,6 @@
             }
         }
 
-        // 💬 相談チャット機能（自動でメッセージの先頭（文頭）にスクロールを合わせるように修正）
         async function sendStoryConsultation() {
             resetIdleTimer();
             const apiKey = localStorage.getItem('gemini_api_key');
@@ -753,17 +750,16 @@
 
             const chatBox = document.getElementById('story-chat-box');
             
-            // 1. ユーザーの質問を追加
             chatBox.innerHTML += `<div style="align-self:flex-end; background:var(--chat-user); padding:6px 10px; border-radius:8px; margin:2px 0; max-width:85%;">${userQ}</div>`;
             inputEl.value = "";
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            // 2. ローディング表示を追加
             const loadId = "story-load-" + Date.now();
             chatBox.innerHTML += `<div id="${loadId}" style="align-self:flex-start; color:var(--text-muted); font-size:0.8rem; margin:2px 0;">⏳ 先生が考えています...</div>`;
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            let promptContext = "You are a friendly English teacher. Akky asked a question about the English phrasing you just provided. Explain the nuances naturally in Japanese. Keep it warm and encouraging.";
+            // 相談窓口チャットの口調もフレンドリーな解説に変更
+            let promptContext = "You are a friendly English buddy. Akky asked a question about the English phrasing you just provided. Explain the nuances naturally and casually in Japanese, like a close friend.";
             let contentsPayload = [{ role: 'user', parts: [{ text: promptContext }] }];
             
             StoryConsultHistory.forEach(h => {
@@ -789,13 +785,11 @@
 
                 document.getElementById(loadId).remove();
                 
-                // 3. 新しいメッセージ要素を作成して追加（スクロール位置調整のため）
                 const newAiMsg = document.createElement('div');
                 newAiMsg.style.cssText = "align-self:flex-start; background:var(--chat-ai); padding:6px 10px; border-radius:8px; margin:2px 0; border:1px solid #333; max-width:85%; line-height:1.4;";
                 newAiMsg.innerHTML = aiAns.replace(/\n/g, '<br>');
                 chatBox.appendChild(newAiMsg);
 
-                // ✨ 修正の要：自動で末尾に飛ばさず、新しく届いた回答の「文頭（メッセージの頭）」が見える位置に調整！
                 chatBox.scrollTop = newAiMsg.offsetTop - 10;
 
                 StoryConsultHistory.push({ role: 'user', text: userQ });
