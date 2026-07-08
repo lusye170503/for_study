@@ -40,7 +40,6 @@
             color: var(--primary-color);
         }
 
-        /* ⏱️ タイマー表示エリア */
         .timer-bar {
             background-color: var(--card-bg);
             text-align: center;
@@ -112,7 +111,6 @@
             margin: 4px;
         }
 
-        /* スピード選択ボタン */
         .voice-selector {
             display: flex;
             gap: 6px;
@@ -137,7 +135,6 @@
             font-weight: bold;
         }
 
-        /* チャットエリア */
         .chat-container {
             display: flex;
             flex-direction: column;
@@ -179,7 +176,6 @@
             line-height: 1.5;
         }
 
-        /* カスタムリンクの縦並び */
         .hub-links-vertical {
             display: flex;
             flex-direction: column;
@@ -205,7 +201,6 @@
             color: var(--text-muted);
         }
 
-        /* 設定画面のカスタム入力用 */
         .settings-group {
             margin-bottom: 15px;
             padding-bottom: 15px;
@@ -218,7 +213,6 @@
             margin-bottom: 4px;
         }
 
-        /* ナビゲーション */
         .nav-bar {
             position: fixed;
             bottom: 0;
@@ -264,7 +258,6 @@
 
     <header>🇺🇸 あっきーさんの専用英語特訓ルーム</header>
     
-    <!-- ⏱️ タイマー表示部分 -->
     <div class="timer-bar">
         ⏳ 今日: <span class="timer-badge" id="time-today">0分</span> 
         🐾 累計: <span class="timer-badge" id="time-total">0.0時間</span>
@@ -305,7 +298,7 @@
             </div>
         </div>
 
-        <!-- 2. これ英語でなんて言う？＆引用練習画面 -->
+        <!-- 2. これ英語でなんて言う？＆引用練習画面（相談機能つきに強化！） -->
         <div id="page-story" class="page">
             <div class="card">
                 <h2>📝 つぶやき日記・セリフ引用・教材を英語にする</h2>
@@ -318,11 +311,25 @@
                 <div style="font-size:0.85rem; color:var(--text-muted);">🇺🇸 自然な英語表現:</div>
                 <div id="story-english-output" style="font-size:1.1rem; font-weight:bold; margin: 5px 0; color:#fff;"></div>
                 
-                <button class="btn-sub" onclick="playVoice(document.getElementById('story-english-output').innerText);">🔊 お手本音声を再生</button>
-                <button class="btn-sub" style="background-color:#4e8d7c;" onclick="saveToPhraseBook();">📌 フレーズ帳に保存</button>
+                <div style="display:flex; gap:6px; margin-bottom:10px;">
+                    <button class="btn-sub" onclick="playVoice(document.getElementById('story-english-output').innerText);">🔊 お手本音声を再生</button>
+                    <button class="btn-sub" style="background-color:#4e8d7c;" onclick="saveToPhraseBook();">📌 フレーズ帳に保存</button>
+                </div>
                 
-                <div style="font-size:0.85rem; color:var(--text-muted); margin-top:15px;">💡 日本語のずぼら解説:</div>
+                <div style="font-size:0.85rem; color:var(--text-muted); margin-top:10px;">💡 日本語のずぼら解説:</div>
                 <div id="story-explanation-output" class="explanation-box"></div>
+
+                <!-- 💬 ニュアンス違いの相談窓口チャット -->
+                <div style="margin-top:20px; border-top:1px dashed #444; padding-top:15px;">
+                    <span style="font-size:0.85rem; color:var(--primary-color); font-weight:bold;">💬 表現のニュアンスを先生に相談する</span>
+                    <div id="story-chat-box" style="display:flex; flex-direction:column; gap:8px; background:#161616; padding:10px; border-radius:8px; margin:8px 0; max-height:200px; overflow-y:auto; font-size:0.9rem;">
+                        <div style="color:var(--text-muted); font-size:0.8rem; text-align:center;">「watchじゃダメ？」「別の言い方は？」など何でも聞いてね！</div>
+                    </div>
+                    <div style="display:flex; gap:6px;">
+                        <input type="text" id="story-chat-input" placeholder="例：watchじゃダメ？ / もっとカジュアルに言うと？" style="margin:0; flex:1;" oninput="resetIdleTimer();">
+                        <button class="btn-main" style="margin:0; width:auto; padding:0 15px;" onclick="sendStoryConsultation();">きく 🚀</button>
+                    </div>
+                </div>
             </div>
 
             <div class="card">
@@ -366,9 +373,8 @@
                 </div>
             </div>
 
-            <!-- タイマーの手動初期化用 -->
             <div class="card">
-                <h2>⏱️ タイマーのリセット（実験用）</h2>
+                <h2>⏱️ タイマーのリセット</h2>
                 <button class="btn-sub" style="background-color:#8b0000;" onclick="resetAllTimersData();">⚠️ 勉強時間データを全削除する</button>
             </div>
         </div>
@@ -385,6 +391,7 @@
 
     <script>
         let ChatHistory = [];
+        let StoryConsultHistory = []; // 📝 これ英語で？画面用のチャット履歴
         let PhraseBook = JSON.parse(localStorage.getItem('oru_phrases')) || [];
         let lastAiEnglishText = "Hi Akky! Welcome to your room. Let's practice English together at your own pace!";
         let currentSpeechRate = 0.60;
@@ -392,7 +399,6 @@
         let recognition = null;
         let isRecognizing = false;
 
-        // ⏱️ タイマー用変数
         let secondsToday = 0;
         let secondsTotal = 0;
         let lastActiveTime = Date.now();
@@ -414,21 +420,17 @@
             loadCustomLinks();
             initTimer();
 
-            // 画面タッチやスクロールがあったら動きを検知
             window.addEventListener('click', resetIdleTimer);
             window.addEventListener('touchstart', resetIdleTimer);
             window.addEventListener('scroll', resetIdleTimer);
         });
 
-        // ⏱️ タイマー初期化
         function initTimer() {
             const todayStr = new Date().toLocaleDateString();
             const savedDate = localStorage.getItem('akky_timer_date');
-            
             secondsTotal = parseInt(localStorage.getItem('akky_timer_total')) || 0;
 
             if (savedDate !== todayStr) {
-                // 日付が変わっていたら「今日」だけリセット
                 secondsToday = 0;
                 localStorage.setItem('akky_timer_date', todayStr);
                 localStorage.setItem('akky_timer_today', '0');
@@ -438,9 +440,7 @@
 
             updateTimerDisplay();
 
-            // 1秒ごとにカウントするループ
             setInterval(() => {
-                // 5分(300000ms)以上動きがなければ「寝落ち・放置」とみなす
                 if (Date.now() - lastActiveTime > 300000) {
                     if (!isIdle) {
                         isIdle = true;
@@ -449,18 +449,14 @@
                     }
                     return; 
                 }
-
                 secondsToday++;
                 secondsTotal++;
-
                 localStorage.setItem('akky_timer_today', secondsToday);
                 localStorage.setItem('akky_timer_total', secondsTotal);
-
                 updateTimerDisplay();
             }, 1000);
         }
 
-        // ⏱️ 画面操作されたら放置タイマーをリセット
         function resetIdleTimer() {
             lastActiveTime = Date.now();
             if (isIdle) {
@@ -470,16 +466,13 @@
             }
         }
 
-        // ⏱️ 表示の更新
         function updateTimerDisplay() {
             const minsToday = Math.floor(secondsToday / 60);
             document.getElementById('time-today').innerText = `${minsToday}分`;
-
             const hoursTotal = (secondsTotal / 3600).toFixed(1);
             document.getElementById('time-total').innerText = `${hoursTotal}時間`;
         }
 
-        // ⏱️ タイマーの全削除
         function resetAllTimersData() {
             if (confirm("これまでの勉強時間をリセットしてもよろしいですか？")) {
                 secondsToday = 0;
@@ -549,7 +542,7 @@
             document.getElementById('page-' + tabId).classList.add('active');
             if(element) element.classList.add('active');
             if(tabId === 'phrases') renderPhrases();
-            resetIdleTimer(); // タブ切り替えもアクティブとみなす
+            resetIdleTimer();
         }
 
         function setSpeedMode(rate) {
@@ -612,7 +605,7 @@
             }
         }
 
-                const BASE_PROMPT = 
+        const BASE_PROMPT = 
             "You are a kind, encouraging American English coach for Akky, a beginner learner (A1-A2 level).\n" +
             "CRITICAL RULES:\n" +
             "1. Keep your English responses short, simple, and clean (maximum 2 short sentences).\n" +
@@ -697,6 +690,7 @@
             box.scrollTop = box.scrollHeight;
         }
 
+        // 📝 最初の英語化リクエスト
         async function convertStory() {
             resetIdleTimer();
             const apiKey = localStorage.getItem('gemini_api_key');
@@ -709,6 +703,10 @@
             targetCard.style.display = "block";
             document.getElementById('story-english-output').innerText = "⏳ Transforming...";
             document.getElementById('story-explanation-output').innerText = "Analyzing...";
+            
+            // 相談用チャット欄をクリアして初期化
+            document.getElementById('story-chat-box').innerHTML = `<div style="color:var(--text-muted); font-size:0.8rem; text-align:center;">「watchじゃダメ？」「別の言い方は？」など何でも聞いてね！</div>`;
+            StoryConsultHistory = [];
 
             const prompt = `以下のテキストを解析し、JSONデータのみを返してください。\nテキスト:「${textInput}」\n\n{\n  "english": "自然な表現",\n  "explanation": "丁寧な日本語解説"\n}`;
 
@@ -726,9 +724,69 @@
                 document.getElementById('story-english-output').innerText = result.english;
                 document.getElementById('story-explanation-output').innerHTML = result.explanation.replace(/\n/g, '<br>');
 
+                // 相談用の基礎データを履歴に記憶
+                StoryConsultHistory.push({ role: "system", text: `あっきーさんが言いたかった日本語:「${textInput}」, AIが最初に提案した英語:「${result.english}」` });
+
                 playVoice(result.english);
             } catch(e) {
                 document.getElementById('story-english-output').innerText = "❌ エラー";
+            }
+        }
+
+        // 📝 ニュアンス違いの相談チャット送信
+        async function sendStoryConsultation() {
+            resetIdleTimer();
+            const apiKey = localStorage.getItem('gemini_api_key');
+            if(!apiKey) return alert("⚙️タブからAPIキーを登録してください");
+
+            const inputEl = document.getElementById('story-chat-input');
+            const userQ = inputEl.value.trim();
+            if(!userQ) return;
+
+            const chatBox = document.getElementById('story-chat-box');
+            
+            // あっきーさんの質問を表示
+            chatBox.innerHTML += `<div style="align-self:flex-end; background:var(--chat-user); padding:6px 10px; border-radius:8px; margin:2px 0; max-width:85%;">${userQ}</div>`;
+            inputEl.value = "";
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // ローディング
+            const loadId = "story-load-" + Date.now();
+            chatBox.innerHTML += `<div id="${loadId}" style="align-self:flex-start; color:var(--text-muted); font-size:0.8rem; margin:2px 0;">⏳ 先生が考えています...</div>`;
+
+            // プロンプト組み立て
+            let promptContext = "You are a friendly English teacher. Akky asked a question about the English phrasing you just provided. Explain the nuances naturally in Japanese. Keep it warm and encouraging.";
+            let contentsPayload = [{ parts: [{ text: promptContext }] }];
+            
+            StoryConsultHistory.forEach(h => {
+                if(h.role !== 'system') {
+                    contentsPayload.push({ role: h.role, parts: [{ text: h.text }] });
+                } else {
+                    contentsPayload[0].parts[0].text += `\n[Context] ${h.text}`;
+                }
+            });
+            contentsPayload.push({ role: 'user', parts: [{ text: userQ }] });
+
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: contentsPayload })
+                });
+                const data = await res.json();
+                const aiAns = data.candidates[0].content.parts[0].text;
+
+                document.getElementById(loadId).remove();
+                
+                // 先生の回答を表示
+                chatBox.innerHTML += `<div style="align-self:flex-start; background:var(--chat-ai); padding:6px 10px; border-radius:8px; margin:2px 0; border:1px solid #333; max-width:85%; line-height:1.4;">${aiAns.replace(/\n/g, '<br>')}</div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+
+                // 履歴を蓄積
+                StoryConsultHistory.push({ role: 'user', text: userQ });
+                StoryConsultHistory.push({ role: 'model', text: aiAns });
+            } catch(e) {
+                document.getElementById(loadId).innerText = "❌ エラーが発生しました。";
             }
         }
 
