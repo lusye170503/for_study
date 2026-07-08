@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>おるーさんの専用英語ルーム</title>
+    <title>あっきーさんの専用英語ルーム</title>
     
     <!-- PWA設定 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="OruEnglish">
+    <meta name="apple-mobile-web-app-title" content="AkkyEnglish">
     
     <style>
         :root {
@@ -118,7 +118,7 @@
             font-weight: bold;
         }
         .voice-btn.active.m-voice {
-            background-color: #6a1b9a; /* めめ風はちょっとエレガントな紫に */
+            background-color: #6a1b9a;
         }
 
         /* チャットエリア */
@@ -227,30 +227,30 @@
 </head>
 <body>
 
-    <header>🇺🇸 おるーさんの専用英語特訓ルーム</header>
+    <header>🇺🇸 あっきーさんの専用英語特訓ルーム</header>
 
     <div class="container">
         
         <!-- 1. 英会話チャット画面 -->
         <div id="page-chat" class="page active">
             <div class="card">
-                <h2>🎙️ 先生の声を選択</h2>
+                <h2>🎙️ 先生のキャラクターを選択</h2>
                 <div class="voice-selector">
                     <div id="v-healer" class="voice-btn active" onclick="setVoiceMode('healer')">🌸 癒し系女性<br>(穏やか)</div>
                     <div id="v-drew" class="voice-btn" onclick="setVoiceMode('drew')">🔥 ドリュー風<br>(元気)</div>
                     <div id="v-meme" class="voice-btn m-voice" onclick="setVoiceMode('meme')">✨ イケボメンズ<br>(優しく穏やか)</div>
                 </div>
 
-                <h2>🗣️ 英会話レッスン</h2>
+                <h2>🗣 Tangled / English Chat</h2>
                 
                 <div style="background:#1a1a1a; padding:10px; border-radius:8px; margin-bottom:10px;">
                     <span style="font-size:0.8rem; color:var(--text-muted);">🎯 今日のトークテーマ（自由に入力・変更OK）</span>
-                    <input type="text" id="chat-theme" placeholder="例: Snow Manの新曲, Staubの無水カレー, タロット占い">
+                    <input type="text" id="chat-theme" placeholder="例: 推し活, カレー調理, タロット占い">
                     <button class="btn-sub" onclick="suggestTheme();">🎲 AIからテーマを提案してもらう</button>
                 </div>
 
                 <div class="chat-container" id="chat-box">
-                    <div class="msg ai">Hi Oru-san! Ready to practice? Let's talk about your favorite things or what you studied today! Tell me when you're ready!</div>
+                    <div class="msg ai" id="welcome-msg">Hi Akky! I'm your gentle teacher. Let's enjoy practicing English together at your own pace! 🌸</div>
                 </div>
 
                 <div style="display:flex; gap:6px; margin-bottom: 6px;">
@@ -267,7 +267,7 @@
         <div id="page-story" class="page">
             <div class="card">
                 <h2>🌐 Web教材ハブ（かんたん外部連携）</h2>
-                <p style="font-size:0.8rem; color:var(--text-muted); margin-top:-8px;">ここからお気に入りの教材サイトをパッと開いて、気になるフレーズを下の枠にコピペして使ね！</p>
+                <p style="font-size:0.8rem; color:var(--text-muted); margin-top:-8px;">お気に入りのサイトから、気になるフレーズを下の枠にコピペして使ってね！</p>
                 <div class="hub-links">
                     <a href="https://www.cnn.com/cnn10" target="_blank" class="hub-btn">📺 CNN 10 (動画・英語ニュース)</a>
                     <a href="https://www.oxfordlearnersdictionaries.com/" target="_blank" class="hub-btn">📖 Oxford 辞書 (発音検索)</a>
@@ -325,9 +325,7 @@
     <script>
         let ChatHistory = [];
         let PhraseBook = JSON.parse(localStorage.getItem('oru_phrases')) || [];
-        let lastAiEnglishText = "Hi Oru-san! Ready to practice? Let's talk about your favorite things or what you studied today! Tell me when you're ready!";
-        
-        // ボイス設定の初期化（デフォルト：healer）
+        let lastAiEnglishText = "Hi Akky! Ready to practice? Let's enjoy practicing English together!";
         let currentVoiceMode = 'healer';
 
         let recognition = null;
@@ -361,55 +359,44 @@
             if(tabId === 'phrases') renderPhrases();
         }
 
-        // 🎙️ 声の種類を切り替える関数
+        // 🎙️ キャラクター切り替え（Akkyに修正）
         function setVoiceMode(mode) {
             currentVoiceMode = mode;
             document.querySelectorAll('.voice-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById('v-' + mode).classList.add('active');
             
-            // 切り替えた瞬間に、テストで一言喋らせる
-            if(mode === 'healer') playVoice("Hello! Let's relax and study.");
-            if(mode === 'drew') playVoice("Hey! Let's do this! You look great today!");
-            if(mode === 'meme') playVoice("Hi Oru-san. Don't worry, I'm right here with you.");
+            const welcomeMsg = document.getElementById('welcome-msg');
+            
+            if(mode === 'healer') {
+                lastAiEnglishText = "Hi Akky! I'm your gentle teacher. Let's relax and enjoy English. You are doing great.";
+                welcomeMsg.innerHTML = lastAiEnglishText + " 🌸";
+            } else if(mode === 'drew') {
+                lastAiEnglishText = "Hey Akky! Let's get started! You can do it! Show me what you got, baby!";
+                welcomeMsg.innerHTML = lastAiEnglishText + " 🔥🚀";
+            } else if(mode === 'meme') {
+                lastAiEnglishText = "Hi Akky. Don't worry, take your time. I'm right here with you. Let's try together.";
+                welcomeMsg.innerHTML = lastAiEnglishText + " ✨🤵‍♂️";
+            }
+            
+            playVoice(lastAiEnglishText);
         }
 
-        // 🔊 推しボイスで自動読み上げをするマジック
         function playVoice(text) {
             if (!text) return;
             window.speechSynthesis.cancel();
             const englishClean = text.replace(/[^A-Za-z0-9'\s,\.!\\?]/g, '').trim();
             const utterance = new SpeechSynthesisUtterance(englishClean || text);
-            
-            // 全体のベースはアメリカ英語
             utterance.lang = 'en-US';
 
-            // スマホに登録されている音声のリストを取得
-            const voices = window.speechSynthesis.getVoices();
-
             if (currentVoiceMode === 'meme') {
-                // 🤵‍♂️ イケボメンズ（優しく穏やか）
-                // 端末内の男性の英語音声（Google US English Male や Microsoft David など）を探す
-                const maleVoice = voices.find(v => v.lang.startsWith('en') && v.name.toLowerCase().includes('male'));
-                if(maleVoice) utterance.voice = maleVoice;
-                
-                utterance.pitch = 0.85; // 声を少し低めにして甘く落ち着いたトーンに
-                utterance.rate = 0.92;  // 穏やかに、優しく語りかけるテンポ
-                
+                utterance.pitch = 0.7; 
+                utterance.rate = 0.82;  
             } else if (currentVoiceMode === 'drew') {
-                // 👱‍♀️ ドリュー風（ちょっと元気でチャーミング）
-                const femaleVoice = voices.find(v => v.lang.startsWith('en') && (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('zira') || v.name.toLowerCase().includes('google')));
-                if(femaleVoice) utterance.voice = femaleVoice;
-
-                utterance.pitch = 1.25; // 声のトーンを上げてハッピー感を追加
-                utterance.rate = 1.1;   // 少しテンポよく弾むように
-                
+                utterance.pitch = 1.35; 
+                utterance.rate = 1.12;  
             } else {
-                // 🌸 癒し系女性（初期状態：穏やか）
-                const femaleVoice = voices.find(v => v.lang.startsWith('en') && (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('google')));
-                if(femaleVoice) utterance.voice = femaleVoice;
-
-                utterance.pitch = 1.0;  // 標準的な高さ
-                utterance.rate = 0.9;   // 聞き取りやすくゆったり
+                utterance.pitch = 1.0;  
+                utterance.rate = 0.92;  
             }
             
             window.speechSynthesis.speak(utterance);
@@ -453,18 +440,18 @@
             }
         }
 
+        // AIプロンプトのターゲット名を Akky に修正
         const BASE_PROMPT = 
-            "You are a kind, encouraging, yet strictly professional American English coach for Oru-san, a beginner learner (A1-A2 level).\n" +
-            "Your personality matches the user's selected setting, but always maintain elite standards for pronunciation.\n" +
+            "You are a kind, encouraging American English coach for Akky, a beginner learner (A1-A2 level).\n" +
             "CRITICAL RULES:\n" +
             "1. Keep your English responses short, simple, and clean (maximum 2-3 short sentences).\n" +
-            "2. Always analyze Oru-san's input. When providing feedback on feedback, use phonetic symbols (IPA like /æ/, /r/, /l/) instead of katakana.\n" +
-            "3. At the very end of your response, always provide a brief Japanese section titled [日本語の解説] explaining key idioms, grammar, or pronunciation tips with IPA symbols.";
+            "2. Meticulously analyze Akky's input for feedback, using phonetic symbols (IPA) instead of katakana.\n" +
+            "3. At the very end of your response, always provide a brief Japanese section titled [日本語の解説] explaining key idioms or pronunciation tips.";
 
         async function suggestTheme() {
             const apiKey = localStorage.getItem('gemini_api_key');
             if(!apiKey) return alert("⚙️タブからAPIキーを登録してください");
-            const prompt = "おるーさんの大好きなテーマ（Snow Man、料理、愛猫、プロのタロット占い、アメリカドラマ、DUO Basic）から、トークするお題を、英語1文と日本語1文で「〜について話そう！」と、1つだけ提案してください。";
+            const prompt = "あっきーさんの大好きなテーマ（Snow Man、料理、愛猫、プロのタロット占い、アメリカドラマ、DUO Basic）から、トークするお題を、英語1文と日本語1文で「〜について話そう！」と、1つだけ提案してください。";
             try {
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
                     method: 'POST',
@@ -488,8 +475,18 @@
             appendMessage(userText, 'user');
             inputEl.value = "";
 
+            // 👑 キャラクターごとの演技指導（Akkyに修正）
+            let personaPrompt = "";
+            if (currentVoiceMode === 'meme') {
+                personaPrompt = "\n[ROLEPLAY CONSTRAINT]: You are acting as 'Meme'—a very gentle, sweet, and calm handsome man. Speak with deep warmth, use comforting words, and treat Akky with utmost care and sweetness. Keep sentences short.";
+            } else if (currentVoiceMode === 'drew') {
+                personaPrompt = "\n[ROLEPLAY CONSTRAINT]: You are acting as 'Drew'—an energetic, highly enthusiastic, and incredibly cheerful woman (like Drew Barrymore). Use passionate, upbeat expressions like 'Wow!', 'Awesome!', or 'You can do it, baby!' to hype Akky up!";
+            } else {
+                personaPrompt = "\n[ROLEPLAY CONSTRAINT]: You are acting as a gentle, serene, and relaxing female healer coach. Speak softly, peacefully, and encouragingly.";
+            }
+
             const theme = document.getElementById('chat-theme').value.trim();
-            let contextPrompt = BASE_PROMPT + `\nCurrently, you are roleplaying with the voice persona: ${currentVoiceMode}. Adjust your textual tone slightly to fit (e.g., warmer for meme, more energetic for drew).`;
+            let contextPrompt = BASE_PROMPT + personaPrompt;
             if(theme) contextPrompt += `\n[Current Theme]: ${theme}`;
 
             let contentsPayload = [{ parts: [{ text: contextPrompt }] }];
