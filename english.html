@@ -94,6 +94,33 @@
             margin: 4px;
         }
 
+        /* 👑 ボイス選択ボタンのスタイル */
+        .voice-selector {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .voice-btn {
+            flex: 1;
+            background-color: #252525;
+            color: var(--text-muted);
+            border: 1px solid #333;
+            padding: 10px 5px;
+            font-size: 0.75rem;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .voice-btn.active {
+            background-color: #3b5998;
+            color: #fff;
+            border-color: var(--primary-color);
+            font-weight: bold;
+        }
+        .voice-btn.active.m-voice {
+            background-color: #6a1b9a; /* めめ風はちょっとエレガントな紫に */
+        }
+
         /* チャットエリア */
         .chat-container {
             display: flex;
@@ -135,6 +162,25 @@
             font-size: 0.85rem;
             border-radius: 0 8px 8px 0;
             line-height: 1.5;
+        }
+
+        /* ハブのリンク集 */
+        .hub-links {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .hub-btn {
+            background-color: #252525;
+            color: #ffb423;
+            border: 1px solid #333;
+            padding: 10px;
+            font-size: 0.85rem;
+            border-radius: 8px;
+            text-decoration: none;
+            text-align: center;
+            display: block;
         }
 
         /* ナビゲーション */
@@ -188,9 +234,15 @@
         <!-- 1. 英会話チャット画面 -->
         <div id="page-chat" class="page active">
             <div class="card">
-                <h2>🗣️ アメリカン先生と英会話特訓</h2>
+                <h2>🎙️ 先生の声を選択</h2>
+                <div class="voice-selector">
+                    <div id="v-healer" class="voice-btn active" onclick="setVoiceMode('healer')">🌸 癒し系女性<br>(穏やか)</div>
+                    <div id="v-drew" class="voice-btn" onclick="setVoiceMode('drew')">🔥 ドリュー風<br>(元気)</div>
+                    <div id="v-meme" class="voice-btn m-voice" onclick="setVoiceMode('meme')">✨ イケボメンズ<br>(優しく穏やか)</div>
+                </div>
+
+                <h2>🗣️ 英会話レッスン</h2>
                 
-                <!-- テーマフリー入力 ＆ AI提案 -->
                 <div style="background:#1a1a1a; padding:10px; border-radius:8px; margin-bottom:10px;">
                     <span style="font-size:0.8rem; color:var(--text-muted);">🎯 今日のトークテーマ（自由に入力・変更OK）</span>
                     <input type="text" id="chat-theme" placeholder="例: Snow Manの新曲, Staubの無水カレー, タロット占い">
@@ -201,10 +253,9 @@
                     <div class="msg ai">Hi Oru-san! Ready to practice? Let's talk about your favorite things or what you studied today! Tell me when you're ready!</div>
                 </div>
 
-                <!-- 音声入力の簡易サポート機能 -->
                 <div style="display:flex; gap:6px; margin-bottom: 6px;">
                     <button id="btn-mic" class="btn-sub" style="flex:1; background-color:#2e6930;" onclick="toggleSpeechRecognition();">🎤 声で入力する（開始/停止）</button>
-                    <button class="btn-sub" style="flex:0.5;" onclick="playLastAiVoice();">🔊 先生の声を聴く</button>
+                    <button class="btn-sub" style="flex:0.5;" onclick="playLastAiVoice();">🔊 声を聴く</button>
                 </div>
 
                 <textarea id="chat-input" rows="2" placeholder="英語で返事してみよう（日本語を交ぜてもOK！）"></textarea>
@@ -215,24 +266,31 @@
         <!-- 2. これ英語でなんて言う？＆引用練習画面 -->
         <div id="page-story" class="page">
             <div class="card">
-                <h2>📝 つぶやき日記・セリフ引用を英語にする</h2>
-                <p style="font-size:0.8rem; color:var(--text-muted); margin-top:-8px;">今日あったこと、ドラマのセリフ、歌詞などを入力してね。</p>
-                
-                <textarea id="story-input" rows="3" placeholder="（例1）久しぶりに友達と話して、近況を英語でも話せたらいいなと思った。&#11015;&#10;（例2）ドラマ『FRIENDS』のこのセリフのニュアンスと発音記号が知りたい！「How you doin'?」"></textarea>
-                
+                <h2>🌐 Web教材ハブ（かんたん外部連携）</h2>
+                <p style="font-size:0.8rem; color:var(--text-muted); margin-top:-8px;">ここからお気に入りの教材サイトをパッと開いて、気になるフレーズを下の枠にコピペして使ね！</p>
+                <div class="hub-links">
+                    <a href="https://www.cnn.com/cnn10" target="_blank" class="hub-btn">📺 CNN 10 (動画・英語ニュース)</a>
+                    <a href="https://www.oxfordlearnersdictionaries.com/" target="_blank" class="hub-btn">📖 Oxford 辞書 (発音検索)</a>
+                    <a href="https://nativecamp.net/blog/" target="_blank" class="hub-btn">💡 ネイティブキャンプ ブログ</a>
+                    <a href="https://www.youtube.com" target="_blank" class="hub-btn">❤️ YouTube でセリフ探し</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📝 つぶやき日記・セリフ引用・教材を英語にする</h2>
+                <textarea id="story-input" rows="3" placeholder="（例）久しぶりに友達と話して、近況を英語でも話せたらいいなと思った。"></textarea>
                 <button class="btn-main" onclick="convertStory();">AIに自然な英語表現にしてもらう ✨</button>
             </div>
 
             <div class="card" id="story-result-card" style="display:none;">
                 <h2>✨ AIからのデザイン教材</h2>
-                
                 <div style="font-size:0.85rem; color:var(--text-muted);">🇺🇸 自然な英語表現:</div>
                 <div id="story-english-output" style="font-size:1.1rem; font-weight:bold; margin: 5px 0; color:#fff;"></div>
                 
                 <button class="btn-sub" onclick="playVoice(document.getElementById('story-english-output').innerText);">🔊 お手本音声を再生</button>
                 <button class="btn-sub" style="background-color:#4e8d7c;" onclick="saveToPhraseBook();">📌 フレーズ帳に保存</button>
                 
-                <div style="font-size:0.85rem; color:var(--text-muted); margin-top:15px;">💡 日本語のずぼら解説（発音記号・文法・慣用句）:</div>
+                <div style="font-size:0.85rem; color:var(--text-muted); margin-top:15px;">💡 日本語のずぼら解説:</div>
                 <div id="story-explanation-output" class="explanation-box"></div>
             </div>
         </div>
@@ -241,7 +299,6 @@
         <div id="page-phrases" class="page">
             <div class="card">
                 <h2>📌 お気に入りフレーズ帳</h2>
-                <p style="font-size:0.8rem; color:var(--text-muted);">ストックしたお気に入りのセリフや表現をいつでもリピート練習できます。</p>
                 <ul class="flex-list" id="phrase-list"></ul>
             </div>
         </div>
@@ -269,8 +326,10 @@
         let ChatHistory = [];
         let PhraseBook = JSON.parse(localStorage.getItem('oru_phrases')) || [];
         let lastAiEnglishText = "Hi Oru-san! Ready to practice? Let's talk about your favorite things or what you studied today! Tell me when you're ready!";
+        
+        // ボイス設定の初期化（デフォルト：healer）
+        let currentVoiceMode = 'healer';
 
-        // 音声認識用 (Web Speech API)
         let recognition = null;
         let isRecognizing = false;
 
@@ -299,17 +358,60 @@
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById('page-' + tabId).classList.add('active');
             if(element) element.classList.add('active');
-
             if(tabId === 'phrases') renderPhrases();
         }
 
-        // スマホ自動読み上げ (Text to Speech)
+        // 🎙️ 声の種類を切り替える関数
+        function setVoiceMode(mode) {
+            currentVoiceMode = mode;
+            document.querySelectorAll('.voice-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('v-' + mode).classList.add('active');
+            
+            // 切り替えた瞬間に、テストで一言喋らせる
+            if(mode === 'healer') playVoice("Hello! Let's relax and study.");
+            if(mode === 'drew') playVoice("Hey! Let's do this! You look great today!");
+            if(mode === 'meme') playVoice("Hi Oru-san. Don't worry, I'm right here with you.");
+        }
+
+        // 🔊 推しボイスで自動読み上げをするマジック
         function playVoice(text) {
             if (!text) return;
-            // 発音記号や日本語解説が混ざっている場合は英語部分だけを大まかに抽出して再生
+            window.speechSynthesis.cancel();
             const englishClean = text.replace(/[^A-Za-z0-9'\s,\.!\\?]/g, '').trim();
             const utterance = new SpeechSynthesisUtterance(englishClean || text);
+            
+            // 全体のベースはアメリカ英語
             utterance.lang = 'en-US';
+
+            // スマホに登録されている音声のリストを取得
+            const voices = window.speechSynthesis.getVoices();
+
+            if (currentVoiceMode === 'meme') {
+                // 🤵‍♂️ イケボメンズ（優しく穏やか）
+                // 端末内の男性の英語音声（Google US English Male や Microsoft David など）を探す
+                const maleVoice = voices.find(v => v.lang.startsWith('en') && v.name.toLowerCase().includes('male'));
+                if(maleVoice) utterance.voice = maleVoice;
+                
+                utterance.pitch = 0.85; // 声を少し低めにして甘く落ち着いたトーンに
+                utterance.rate = 0.92;  // 穏やかに、優しく語りかけるテンポ
+                
+            } else if (currentVoiceMode === 'drew') {
+                // 👱‍♀️ ドリュー風（ちょっと元気でチャーミング）
+                const femaleVoice = voices.find(v => v.lang.startsWith('en') && (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('zira') || v.name.toLowerCase().includes('google')));
+                if(femaleVoice) utterance.voice = femaleVoice;
+
+                utterance.pitch = 1.25; // 声のトーンを上げてハッピー感を追加
+                utterance.rate = 1.1;   // 少しテンポよく弾むように
+                
+            } else {
+                // 🌸 癒し系女性（初期状態：穏やか）
+                const femaleVoice = voices.find(v => v.lang.startsWith('en') && (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('google')));
+                if(femaleVoice) utterance.voice = femaleVoice;
+
+                utterance.pitch = 1.0;  // 標準的な高さ
+                utterance.rate = 0.9;   // 聞き取りやすくゆったり
+            }
+            
             window.speechSynthesis.speak(utterance);
         }
 
@@ -317,7 +419,6 @@
             playVoice(lastAiEnglishText);
         }
 
-        // 音声認識の初期化
         function initSpeechRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) {
@@ -333,7 +434,6 @@
                 const text = event.results[0][0].transcript;
                 document.getElementById('chat-input').value = text;
             };
-
             recognition.onend = () => {
                 isRecognizing = false;
                 document.getElementById('btn-mic').innerText = "🎤 声で入力する（開始/停止）";
@@ -342,7 +442,7 @@
         }
 
         function toggleSpeechRecognition() {
-            if (!recognition) return alert("お使いのブラウザ・端末は音声入力に対応していません。");
+            if (!recognition) return alert("音声入力に対応していません。");
             if (isRecognizing) {
                 recognition.stop();
             } else {
@@ -353,23 +453,18 @@
             }
         }
 
-        // 基本のAI命令（裏プロンプト）
         const BASE_PROMPT = 
             "You are a kind, encouraging, yet strictly professional American English coach for Oru-san, a beginner learner (A1-A2 level).\n" +
-            "Your personality: Enthusiastic, friendly, but when it comes to pronunciation and accent, you have elite standards and give strict, meticulous corrections.\n" +
+            "Your personality matches the user's selected setting, but always maintain elite standards for pronunciation.\n" +
             "CRITICAL RULES:\n" +
-            "1. Keep your English responses short, simple, and clean (maximum 2-3 short sentences) so Oru-san doesn't get overwhelmed.\n" +
-            "2. Always analyze Oru-san's input. If they try to speak English or ask about pronunciation, critique their accent, linking sounds, and intonation. Use phonetic symbols (IPA like /æ/, /r/, /l/) for visual clarity instead of katakana.\n" +
-            "3. Demand a 95% perfection rate for pronunciation before smoothly changing the topic, but stay encouraging!\n" +
-            "4. At the very end of your response, always provide a brief Japanese section titled [日本語の解説] explaining key idioms, grammar, or pronunciation tips with IPA symbols if relevant.";
+            "1. Keep your English responses short, simple, and clean (maximum 2-3 short sentences).\n" +
+            "2. Always analyze Oru-san's input. When providing feedback on feedback, use phonetic symbols (IPA like /æ/, /r/, /l/) instead of katakana.\n" +
+            "3. At the very end of your response, always provide a brief Japanese section titled [日本語の解説] explaining key idioms, grammar, or pronunciation tips with IPA symbols.";
 
-        // 1. チャット機能：AIからのテーマ提案
         async function suggestTheme() {
             const apiKey = localStorage.getItem('gemini_api_key');
             if(!apiKey) return alert("⚙️タブからAPIキーを登録してください");
-
-            const prompt = "おるーさんの大好きなテーマ（Snow Manの推し活、Staubの無水調理・料理、愛猫のチビさんたち、プロのタロット占い、アメリカドラマのFRIENDSやグレイズ・アナトミー、今日勉強したDUO Basic）の中から、今日トークするお題を、英語1文と日本語1文で「〜について話そう！」と、1つだけポップに提案してください。";
-            
+            const prompt = "おるーさんの大好きなテーマ（Snow Man、料理、愛猫、プロのタロット占い、アメリカドラマ、DUO Basic）から、トークするお題を、英語1文と日本語1文で「〜について話そう！」と、1つだけ提案してください。";
             try {
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
                     method: 'POST',
@@ -379,12 +474,9 @@
                 const data = await res.json();
                 const text = data.candidates[0].content.parts[0].text;
                 document.getElementById('chat-theme').value = text.trim();
-            } catch(e) {
-                alert("テーマの提案に失敗しました。");
-            }
+            } catch(e) { alert("テーマの提案に失敗しました。"); }
         }
 
-        // 1. チャット機能：メッセージ送信
         async function sendChatMessage() {
             const apiKey = localStorage.getItem('gemini_api_key');
             if(!apiKey) return alert("⚙️タブからAPIキーを登録してください");
@@ -393,25 +485,16 @@
             const userText = inputEl.value.trim();
             if(!userText) return;
 
-            // 画面にユーザー発言を追加
             appendMessage(userText, 'user');
             inputEl.value = "";
 
             const theme = document.getElementById('chat-theme').value.trim();
-            
-            // プロンプトの組み立て
-            let contextPrompt = BASE_PROMPT;
-            if(theme) {
-                contextPrompt += `\n[Current Theme]: ${theme}\nRemember to tailor your question or conversation around this theme.`;
-            }
+            let contextPrompt = BASE_PROMPT + `\nCurrently, you are roleplaying with the voice persona: ${currentVoiceMode}. Adjust your textual tone slightly to fit (e.g., warmer for meme, more energetic for drew).`;
+            if(theme) contextPrompt += `\n[Current Theme]: ${theme}`;
 
-            // 直近の履歴をロード
             let contentsPayload = [{ parts: [{ text: contextPrompt }] }];
             ChatHistory.forEach(msg => {
-                contentsPayload.push({
-                    role: msg.role === 'user' ? 'user' : 'model',
-                    parts: [{ text: msg.text }]
-                });
+                contentsPayload.push({ role: msg.role === 'user' ? 'user' : 'model', parts: [{ text: msg.text }] });
             });
             contentsPayload.push({ role: 'user', parts: [{ text: userText }] });
 
@@ -427,21 +510,19 @@
                 const aiReply = data.candidates[0].content.parts[0].text;
 
                 document.getElementById('loading-msg').remove();
-
                 appendMessage(aiReply, 'ai');
 
-                // 履歴に保存
                 ChatHistory.push({ role: 'user', text: userText });
                 ChatHistory.push({ role: 'model', text: aiReply });
-                if(ChatHistory.length > 10) ChatHistory.shift(); // 溢れたら古いものを捨てる
+                if(ChatHistory.length > 10) ChatHistory.shift();
 
-                // 音声再生用に英語部分だけを記憶（日本語解説の手前までを大まかに保存）
                 const splitIndex = aiReply.indexOf("[日本語");
                 lastAiEnglishText = splitIndex !== -1 ? aiReply.substring(0, splitIndex) : aiReply;
 
+                playVoice(lastAiEnglishText);
             } catch(e) {
                 document.getElementById('loading-msg').remove();
-                appendMessage("❌ Error getting response. Check your API key or connection.", "ai");
+                appendMessage("❌ エラーが発生しました。", "ai");
             }
         }
 
@@ -450,14 +531,11 @@
             const msgEl = document.createElement('div');
             msgEl.className = `msg ${sender}`;
             if(id) msgEl.id = id;
-            
-            // 改行を改行タグに変換して読みやすく
             msgEl.innerHTML = text.replace(/\n/g, '<br>');
             box.appendChild(msgEl);
             box.scrollTop = box.scrollHeight;
         }
 
-        // 2. これ英語でなんて言う？＆引用練習の解析機能
         async function convertStory() {
             const apiKey = localStorage.getItem('gemini_api_key');
             if(!apiKey) return alert("⚙️タブからAPIキーを登録してください");
@@ -468,16 +546,9 @@
             const targetCard = document.getElementById('story-result-card');
             targetCard.style.display = "block";
             document.getElementById('story-english-output').innerText = "⏳ Transforming...";
-            document.getElementById('story-explanation-output').innerText = "Analyzing your story/quote...";
+            document.getElementById('story-explanation-output').innerText = "Analyzing...";
 
-            const prompt = 
-                `以下のテキスト（日本語の日記、つぶやき、または映画・ドラマの引用セリフや歌詞など）を解析し、以下の形式のJSONデータのみを返してください。解説をJSONの外に出さないでください。\n\n` +
-                `テキスト:「${textInput}」\n\n` +
-                `【出力フォーマットのJSON構造】:\n` +
-                `{\n` +
-                `  "english": "日常で使いやすい最も自然なアメリカ英語表現、または引用されたセリフそのもの（1文程度にすっきりまとめること）",\n` +
-                `  "explanation": "◆ 慣用句・フレーズのニュアンス、◆ 文法のワンポイント解説、◆ 発音記号(IPA)を使った発音や音声変化のコツ、をそれぞれ丁寧な日本語で改行を交えて記載してください。カタカナ表記は使わず、必ず発音記号を用いて解説してください。"\n` +
-                `}`;
+            const prompt = `以下のテキストを解析し、JSONデータのみを返してください。\nテキスト:「${textInput}」\n\n{\n  "english": "自然な表現",\n  "explanation": "丁寧な日本語解説"\n}`;
 
             try {
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
@@ -487,42 +558,35 @@
                 });
                 const data = await res.json();
                 let reply = data.candidates[0].content.parts[0].text;
-
                 reply = reply.replace(/```json/g, '').replace(/```/g, '').trim();
                 const result = JSON.parse(reply);
 
                 document.getElementById('story-english-output').innerText = result.english;
                 document.getElementById('story-explanation-output').innerHTML = result.explanation.replace(/\n/g, '<br>');
 
+                playVoice(result.english);
             } catch(e) {
-                document.getElementById('story-english-output').innerText = "❌ エラーが発生しました。";
-                document.getElementById('story-explanation-output').innerText = "うまく解析を処理できませんでした。もう一度お試しください。";
+                document.getElementById('story-english-output').innerText = "❌ エラー";
             }
         }
 
-        // 2. フレーズ帳への保存
         function saveToPhraseBook() {
             const eng = document.getElementById('story-english-output').innerText;
             const exp = document.getElementById('story-explanation-output').innerHTML;
             if(!eng || eng.startsWith("⏳") || eng.startsWith("❌")) return;
-
-            if(PhraseBook.some(p => p.english === eng)) return alert("この表現はすでに登録されています！");
-
+            if(PhraseBook.some(p => p.english === eng)) return alert("登録済みです");
             PhraseBook.push({ english: eng, explanation: exp });
             localStorage.setItem('oru_phrases', JSON.stringify(PhraseBook));
             alert("マイフレーズ帳にストックしました！📌");
         }
 
-        // 3. フレーズ帳のレンダリング
         function renderPhrases() {
             const list = document.getElementById('phrase-list');
             list.innerHTML = "";
-
             if(PhraseBook.length === 0) {
-                list.innerHTML = `<p style="color:var(--text-muted); text-align:center; padding:20px;">まだストックされたフレーズはありません。</p>`;
+                list.innerHTML = `<p style="color:var(--text-muted); text-align:center; padding:20px;">ストックはありません。</p>`;
                 return;
             }
-
             [...PhraseBook].reverse().forEach((p, idx) => {
                 const realIdx = PhraseBook.length - 1 - idx;
                 list.innerHTML += `
@@ -541,7 +605,7 @@
         }
 
         function deletePhrase(idx) {
-            if(confirm("このフレーズを削除しますか？")) {
+            if(confirm("削除しますか？")) {
                 PhraseBook.splice(idx, 1);
                 localStorage.setItem('oru_phrases', JSON.stringify(PhraseBook));
                 renderPhrases();
