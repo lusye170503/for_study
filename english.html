@@ -33,12 +33,30 @@
 
         header {
             background-color: var(--card-bg);
-            padding: 20px 15px;
+            padding: 15px 15px 5px 15px;
             text-align: center;
             font-size: 1.1rem;
             font-weight: bold;
-            border-bottom: 1px solid #2d2d2d;
             color: var(--primary-color);
+        }
+
+        /* ⏱️ タイマー表示エリア */
+        .timer-bar {
+            background-color: var(--card-bg);
+            text-align: center;
+            padding: 0 15px 12px 15px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            border-bottom: 1px solid #2d2d2d;
+        }
+        .timer-badge {
+            background: #252525;
+            color: #ffb423;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+            margin: 0 4px;
+            border: 1px solid #333;
         }
 
         .container { padding: 15px; }
@@ -94,7 +112,7 @@
             margin: 4px;
         }
 
-        /* 👑 スピード選択ボタンのスタイル */
+        /* スピード選択ボタン */
         .voice-selector {
             display: flex;
             gap: 6px;
@@ -151,7 +169,6 @@
             border: 1px solid #333;
         }
 
-        /* 解説表示用 */
         .explanation-box {
             background-color: #252525;
             border-left: 4px solid #4a90e2;
@@ -162,23 +179,43 @@
             line-height: 1.5;
         }
 
-        /* ハブのリンク集 */
-        .hub-links {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+        /* カスタムリンクの縦並び */
+        .hub-links-vertical {
+            display: flex;
+            flex-direction: column;
             gap: 8px;
-            margin-bottom: 10px;
+            margin-top: 5px;
         }
-        .hub-btn {
+        .hub-btn-custom {
             background-color: #252525;
             color: #ffb423;
             border: 1px solid #333;
-            padding: 10px;
-            font-size: 0.85rem;
+            padding: 14px;
+            font-size: 0.9rem;
             border-radius: 8px;
             text-decoration: none;
-            text-align: center;
+            text-align: left;
             display: block;
+            position: relative;
+        }
+        .hub-btn-custom::after {
+            content: "➔";
+            position: absolute;
+            right: 15px;
+            color: var(--text-muted);
+        }
+
+        /* 設定画面のカスタム入力用 */
+        .settings-group {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #333;
+        }
+        .settings-group label {
+            font-size: 0.85rem;
+            color: var(--primary-color);
+            display: block;
+            margin-bottom: 4px;
         }
 
         /* ナビゲーション */
@@ -226,6 +263,13 @@
 <body>
 
     <header>🇺🇸 あっきーさんの専用英語特訓ルーム</header>
+    
+    <!-- ⏱️ タイマー表示部分 -->
+    <div class="timer-bar">
+        ⏳ 今日: <span class="timer-badge" id="time-today">0分</span> 
+        🐾 累計: <span class="timer-badge" id="time-total">0.0時間</span>
+        <span id="timer-status" style="font-size:0.7rem; color:#4e8d7c; margin-left:5px;">● 測定中</span>
+    </div>
 
     <div class="container">
         
@@ -256,7 +300,7 @@
                     <button class="btn-sub" style="flex:0.5;" onclick="playLastAiVoice();">🔊 声を聴く</button>
                 </div>
 
-                <textarea id="chat-input" rows="2" placeholder="英語で返事してみよう（日本語を交ぜてもOK！）"></textarea>
+                <textarea id="chat-input" rows="2" placeholder="英語で返事してみよう（日本語を交ぜてもOK！）" oninput="resetIdleTimer();"></textarea>
                 <button class="btn-main" onclick="sendChatMessage();">先生に送信 🚀</button>
             </div>
         </div>
@@ -264,19 +308,8 @@
         <!-- 2. これ英語でなんて言う？＆引用練習画面 -->
         <div id="page-story" class="page">
             <div class="card">
-                <h2>🌐 Web教材ハブ（かんたん外部連携）</h2>
-                <p style="font-size:0.8rem; color:var(--text-muted); margin-top:-8px;">お気に入りのサイトから、気になるフレーズを下の枠にコピペして使ってね！</p>
-                <div class="hub-links">
-                    <a href="https://www.cnn.com/cnn10" target="_blank" class="hub-btn">📺 CNN 10 (動画・英語ニュース)</a>
-                    <a href="https://www.oxfordlearnersdictionaries.com/" target="_blank" class="hub-btn">📖 Oxford 辞書 (発音検索)</a>
-                    <a href="https://nativecamp.net/blog/" target="_blank" class="hub-btn">💡 ネイティブキャンプ ブログ</a>
-                    <a href="https://www.youtube.com" target="_blank" class="hub-btn">❤️ YouTube でセリフ探し</a>
-                </div>
-            </div>
-
-            <div class="card">
                 <h2>📝 つぶやき日記・セリフ引用・教材を英語にする</h2>
-                <textarea id="story-input" rows="3" placeholder="（例）久しぶりに友達と話して、近況を英語でも話せたらいいなと思った。"></textarea>
+                <textarea id="story-input" rows="3" placeholder="（例）久しぶりに友達と話して、近況を英語でも話せたらいいなと思った。" oninput="resetIdleTimer();"></textarea>
                 <button class="btn-main" onclick="convertStory();">AIに自然な英語表現にしてもらう ✨</button>
             </div>
 
@@ -290,6 +323,11 @@
                 
                 <div style="font-size:0.85rem; color:var(--text-muted); margin-top:15px;">💡 日本語のずぼら解説:</div>
                 <div id="story-explanation-output" class="explanation-box"></div>
+            </div>
+
+            <div class="card">
+                <h2>🌐 マイお気に入りリンク（設定から自由に変更OK）</h2>
+                <div class="hub-links-vertical" id="custom-links-container"></div>
             </div>
         </div>
 
@@ -307,6 +345,31 @@
                 <h2>🔑 AIの鍵設定（家計簿と同じキーでOK！）</h2>
                 <input type="password" id="app-api-key" placeholder="AQ.Ab8... で始まるキーを貼り付け" onchange="saveKey();">
                 <p style="font-size:0.75rem; color:#4e8d7c; margin: 5px 0 0 0; display:none;" id="key-status-msg">✅ 鍵を安全に記憶しました！</p>
+            </div>
+
+            <div class="card">
+                <h2>🌐 お気に入りリンクのカスタム登録</h2>
+                <div class="settings-group">
+                    <label>🔗 リンク1（名前 / URL）</label>
+                    <input type="text" id="link-title-1" placeholder="例: Oxford英英辞書" onchange="saveCustomLinks();">
+                    <input type="text" id="link-url-1" placeholder="https://..." onchange="saveCustomLinks();">
+                </div>
+                <div class="settings-group">
+                    <label>🔗 リンク2（名前 / URL）</label>
+                    <input type="text" id="link-title-2" placeholder="例: お気に入りYouTube動画" onchange="saveCustomLinks();">
+                    <input type="text" id="link-url-2" placeholder="https://..." onchange="saveCustomLinks();">
+                </div>
+                <div class="settings-group">
+                    <label>🔗 リンク3（名前 / URL）</label>
+                    <input type="text" id="link-title-3" placeholder="例: ネイティブキャンプ" onchange="saveCustomLinks();">
+                    <input type="text" id="link-url-3" placeholder="https://..." onchange="saveCustomLinks();">
+                </div>
+            </div>
+
+            <!-- タイマーの手動初期化用 -->
+            <div class="card">
+                <h2>⏱️ タイマーのリセット（実験用）</h2>
+                <button class="btn-sub" style="background-color:#8b0000;" onclick="resetAllTimersData();">⚠️ 勉強時間データを全削除する</button>
             </div>
         </div>
 
@@ -329,6 +392,18 @@
         let recognition = null;
         let isRecognizing = false;
 
+        // ⏱️ タイマー用変数
+        let secondsToday = 0;
+        let secondsTotal = 0;
+        let lastActiveTime = Date.now();
+        let isIdle = false;
+
+        const defaultLinks = [
+            { title: "📖 Oxford 辞書 (発音検索)", url: "https://www.oxfordlearnersdictionaries.com/" },
+            { title: "❤️ YouTube で英語のセリフ探し", url: "https://www.youtube.com" },
+            { title: "Google 翻訳", url: "https://translate.google.com" }
+        ];
+
         document.addEventListener("DOMContentLoaded", () => {
             const savedKey = localStorage.getItem('gemini_api_key');
             if(savedKey) {
@@ -336,7 +411,85 @@
                 document.getElementById('key-status-msg').style.display = 'block';
             }
             initSpeechRecognition();
+            loadCustomLinks();
+            initTimer();
+
+            // 画面タッチやスクロールがあったら動きを検知
+            window.addEventListener('click', resetIdleTimer);
+            window.addEventListener('touchstart', resetIdleTimer);
+            window.addEventListener('scroll', resetIdleTimer);
         });
+
+        // ⏱️ タイマー初期化
+        function initTimer() {
+            const todayStr = new Date().toLocaleDateString();
+            const savedDate = localStorage.getItem('akky_timer_date');
+            
+            secondsTotal = parseInt(localStorage.getItem('akky_timer_total')) || 0;
+
+            if (savedDate !== todayStr) {
+                // 日付が変わっていたら「今日」だけリセット
+                secondsToday = 0;
+                localStorage.setItem('akky_timer_date', todayStr);
+                localStorage.setItem('akky_timer_today', '0');
+            } else {
+                secondsToday = parseInt(localStorage.getItem('akky_timer_today')) || 0;
+            }
+
+            updateTimerDisplay();
+
+            // 1秒ごとにカウントするループ
+            setInterval(() => {
+                // 5分(300000ms)以上動きがなければ「寝落ち・放置」とみなす
+                if (Date.now() - lastActiveTime > 300000) {
+                    if (!isIdle) {
+                        isIdle = true;
+                        document.getElementById('timer-status').innerText = "💤 休憩中";
+                        document.getElementById('timer-status').style.color = "#888888";
+                    }
+                    return; 
+                }
+
+                secondsToday++;
+                secondsTotal++;
+
+                localStorage.setItem('akky_timer_today', secondsToday);
+                localStorage.setItem('akky_timer_total', secondsTotal);
+
+                updateTimerDisplay();
+            }, 1000);
+        }
+
+        // ⏱️ 画面操作されたら放置タイマーをリセット
+        function resetIdleTimer() {
+            lastActiveTime = Date.now();
+            if (isIdle) {
+                isIdle = false;
+                document.getElementById('timer-status').innerText = "● 測定中";
+                document.getElementById('timer-status').style.color = "#4e8d7c";
+            }
+        }
+
+        // ⏱️ 表示の更新
+        function updateTimerDisplay() {
+            const minsToday = Math.floor(secondsToday / 60);
+            document.getElementById('time-today').innerText = `${minsToday}分`;
+
+            const hoursTotal = (secondsTotal / 3600).toFixed(1);
+            document.getElementById('time-total').innerText = `${hoursTotal}時間`;
+        }
+
+        // ⏱️ タイマーの全削除
+        function resetAllTimersData() {
+            if (confirm("これまでの勉強時間をリセットしてもよろしいですか？")) {
+                secondsToday = 0;
+                secondsTotal = 0;
+                localStorage.setItem('akky_timer_today', '0');
+                localStorage.setItem('akky_timer_total', '0');
+                updateTimerDisplay();
+                alert("リセットしました！");
+            }
+        }
 
         function saveKey() {
             const key = document.getElementById('app-api-key').value.trim();
@@ -349,38 +502,73 @@
             }
         }
 
+        function loadCustomLinks() {
+            let links = JSON.parse(localStorage.getItem('akky_custom_links'));
+            if (!links) links = defaultLinks;
+            for (let i = 1; i <= 3; i++) {
+                if (links[i-1]) {
+                    document.getElementById(`link-title-${i}`).value = links[i-1].title || "";
+                    document.getElementById(`link-url-${i}`).value = links[i-1].url || "";
+                }
+            }
+            renderCustomLinksHTML(links);
+        }
+
+        function saveCustomLinks() {
+            const links = [];
+            for (let i = 1; i <= 3; i++) {
+                const title = document.getElementById(`link-title-${i}`).value.trim();
+                const url = document.getElementById(`link-url-${i}`).value.trim();
+                if (title || url) {
+                    links.push({ title: title || "無題のリンク", url: url || "#" });
+                }
+            }
+            localStorage.setItem('akky_custom_links', JSON.stringify(links));
+            renderCustomLinksHTML(links);
+        }
+
+        function renderCustomLinksHTML(links) {
+            const container = document.getElementById('custom-links-container');
+            container.innerHTML = "";
+            if (links.length === 0) {
+                container.innerHTML = `<p style="color:var(--text-muted); font-size:0.8rem;">設定タブからリンクを登録してください。</p>`;
+                return;
+            }
+            links.forEach(link => {
+                let targetUrl = link.url;
+                if (targetUrl && !/^https?:\/\//i.test(targetUrl)) {
+                    targetUrl = 'https://' + targetUrl;
+                }
+                container.innerHTML += `<a href="${targetUrl}" target="_blank" class="hub-btn-custom">${link.title}</a>`;
+            });
+        }
+
         function switchTab(tabId, element) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById('page-' + tabId).classList.add('active');
             if(element) element.classList.add('active');
             if(tabId === 'phrases') renderPhrases();
+            resetIdleTimer(); // タブ切り替えもアクティブとみなす
         }
 
-        // ⏱️ スピード変更の制御
         function setSpeedMode(rate) {
             currentSpeechRate = rate;
             document.querySelectorAll('.voice-btn').forEach(btn => btn.classList.remove('active'));
-            
             if (rate === 0.60) document.getElementById('v-60').classList.add('active');
             if (rate === 0.80) document.getElementById('v-80').classList.add('active');
             if (rate === 1.00) document.getElementById('v-100').classList.add('active');
-            
             playVoice(lastAiEnglishText);
         }
 
-        // 🔊 指定されたパーセントの速度で喋らせるコア機能
         function playVoice(text) {
             if (!text) return;
             window.speechSynthesis.cancel();
-            
             const englishClean = text.replace(/[^A-Za-z0-9'\s,\.!\\?]/g, '').trim();
             const utterance = new SpeechSynthesisUtterance(englishClean || text);
             utterance.lang = 'en-US';
-            
-            utterance.pitch = 1.0;  // 自然な女性の声
-            utterance.rate = currentSpeechRate; // 0.60, 0.80, 1.00 をそのまま適用
-            
+            utterance.pitch = 1.0;
+            utterance.rate = currentSpeechRate;
             window.speechSynthesis.speak(utterance);
         }
 
@@ -389,7 +577,7 @@
         }
 
         function initSpeechRecognition() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
             if (!SpeechRecognition) {
                 document.getElementById('btn-mic').style.display = 'none';
                 return;
@@ -402,6 +590,7 @@
             recognition.onresult = (event) => {
                 const text = event.results[0][0].transcript;
                 document.getElementById('chat-input').value = text;
+                resetIdleTimer();
             };
             recognition.onend = () => {
                 isRecognizing = false;
@@ -412,6 +601,7 @@
 
         function toggleSpeechRecognition() {
             if (!recognition) return alert("音声入力に対応していません。");
+            resetIdleTimer();
             if (isRecognizing) {
                 recognition.stop();
             } else {
@@ -430,6 +620,7 @@
             "3. At the very end of your response, always provide a brief Japanese section titled [日本語の解説] explaining key idioms or pronunciation tips.";
 
         async function suggestTheme() {
+            resetIdleTimer();
             const apiKey = localStorage.getItem('gemini_api_key');
             if(!apiKey) return alert("⚙️タブからAPIキーを登録してください");
             const prompt = "あっきーさんの大好きなテーマ（Snow Man、料理、愛猫、プロのタロット占い、アメリカドラマ、DUO Basic）から、トークするお題を、英語1文と日本語1文で「〜について話そう！」と, 1つだけ提案してください。";
@@ -446,6 +637,7 @@
         }
 
         async function sendChatMessage() {
+            resetIdleTimer();
             const apiKey = localStorage.getItem('gemini_api_key');
             if(!apiKey) return alert("⚙️タブからAPIキーを登録してください");
 
@@ -505,6 +697,7 @@
         }
 
         async function convertStory() {
+            resetIdleTimer();
             const apiKey = localStorage.getItem('gemini_api_key');
             if(!apiKey) return alert("⚙️タブからAPIキーを登録してください");
 
