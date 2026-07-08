@@ -298,7 +298,7 @@
             </div>
         </div>
 
-        <!-- 2. これ英語でなんて言う？＆引用練習画面（相談機能つきに強化！） -->
+        <!-- 2. これ英語でなんて言う？＆引用練習画面 -->
         <div id="page-story" class="page">
             <div class="card">
                 <h2>📝 つぶやき日記・セリフ引用・教材を英語にする</h2>
@@ -391,7 +391,7 @@
 
     <script>
         let ChatHistory = [];
-        let StoryConsultHistory = []; // 📝 これ英語で？画面用のチャット履歴
+        let StoryConsultHistory = []; 
         let PhraseBook = JSON.parse(localStorage.getItem('oru_phrases')) || [];
         let lastAiEnglishText = "Hi Akky! Welcome to your room. Let's practice English together at your own pace!";
         let currentSpeechRate = 0.60;
@@ -646,9 +646,13 @@
             let contextPrompt = BASE_PROMPT;
             if(theme) contextPrompt += `\n[Current Theme]: ${theme}`;
 
-            let contentsPayload = [{ parts: [{ text: contextPrompt }] }];
+            let contentsPayload = [{ role: 'user', parts: [{ text: contextPrompt }] }];
+            
             ChatHistory.forEach(msg => {
-                contentsPayload.push({ role: msg.role === 'user' ? 'user' : 'model', parts: [{ text: msg.text }] });
+                contentsPayload.push({ 
+                    role: msg.role === 'user' ? 'user' : 'model', 
+                    parts: [{ text: msg.text }] 
+                });
             });
             contentsPayload.push({ role: 'user', parts: [{ text: userText }] });
 
@@ -661,6 +665,11 @@
                     body: JSON.stringify({ contents: contentsPayload })
                 });
                 const data = await res.json();
+                
+                if (!data.candidates || data.candidates.length === 0) {
+                    throw new Error("API Response Error");
+                }
+                
                 const aiReply = data.candidates[0].content.parts[0].text;
 
                 document.getElementById('loading-msg').remove();
@@ -675,8 +684,10 @@
 
                 playVoice(lastAiEnglishText);
             } catch(e) {
-                document.getElementById('loading-msg').remove();
-                appendMessage("❌ エラーが発生しました。", "ai");
+                if(document.getElementById('loading-msg')) {
+                    document.getElementById('loading-msg').remove();
+                }
+                appendMessage("❌ エラーが発生しました。画面を一度リロードして再度お試しください。", "ai");
             }
         }
 
@@ -690,7 +701,6 @@
             box.scrollTop = box.scrollHeight;
         }
 
-        // 📝 最初の英語化リクエスト
         async function convertStory() {
             resetIdleTimer();
             const apiKey = localStorage.getItem('gemini_api_key');
@@ -704,7 +714,6 @@
             document.getElementById('story-english-output').innerText = "⏳ Transforming...";
             document.getElementById('story-explanation-output').innerText = "Analyzing...";
             
-            // 相談用チャット欄をクリアして初期化
             document.getElementById('story-chat-box').innerHTML = `<div style="color:var(--text-muted); font-size:0.8rem; text-align:center;">「watchじゃダメ？」「別の言い方は？」など何でも聞いてね！</div>`;
             StoryConsultHistory = [];
 
@@ -724,7 +733,6 @@
                 document.getElementById('story-english-output').innerText = result.english;
                 document.getElementById('story-explanation-output').innerHTML = result.explanation.replace(/\n/g, '<br>');
 
-                // 相談用の基礎データを履歴に記憶
                 StoryConsultHistory.push({ role: "system", text: `あっきーさんが言いたかった日本語:「${textInput}」, AIが最初に提案した英語:「${result.english}」` });
 
                 playVoice(result.english);
@@ -733,7 +741,7 @@
             }
         }
 
-        // 📝 ニュアンス違いの相談チャット送信
+        // 💬 相談チャット機能（自動でメッセージの先頭（文頭）にスクロールを合わせるように修正）
         async function sendStoryConsultation() {
             resetIdleTimer();
             const apiKey = localStorage.getItem('gemini_api_key');
@@ -745,22 +753,25 @@
 
             const chatBox = document.getElementById('story-chat-box');
             
-            // あっきーさんの質問を表示
+            // 1. ユーザーの質問を追加
             chatBox.innerHTML += `<div style="align-self:flex-end; background:var(--chat-user); padding:6px 10px; border-radius:8px; margin:2px 0; max-width:85%;">${userQ}</div>`;
             inputEl.value = "";
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            // ローディング
+            // 2. ローディング表示を追加
             const loadId = "story-load-" + Date.now();
             chatBox.innerHTML += `<div id="${loadId}" style="align-self:flex-start; color:var(--text-muted); font-size:0.8rem; margin:2px 0;">⏳ 先生が考えています...</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
 
-            // プロンプト組み立て
             let promptContext = "You are a friendly English teacher. Akky asked a question about the English phrasing you just provided. Explain the nuances naturally in Japanese. Keep it warm and encouraging.";
-            let contentsPayload = [{ parts: [{ text: promptContext }] }];
+            let contentsPayload = [{ role: 'user', parts: [{ text: promptContext }] }];
             
             StoryConsultHistory.forEach(h => {
                 if(h.role !== 'system') {
-                    contentsPayload.push({ role: h.role, parts: [{ text: h.text }] });
+                    contentsPayload.push({ 
+                        role: h.role === 'user' ? 'user' : 'model', 
+                        parts: [{ text: h.text }] 
+                    });
                 } else {
                     contentsPayload[0].parts[0].text += `\n[Context] ${h.text}`;
                 }
@@ -778,15 +789,21 @@
 
                 document.getElementById(loadId).remove();
                 
-                // 先生の回答を表示
-                chatBox.innerHTML += `<div style="align-self:flex-start; background:var(--chat-ai); padding:6px 10px; border-radius:8px; margin:2px 0; border:1px solid #333; max-width:85%; line-height:1.4;">${aiAns.replace(/\n/g, '<br>')}</div>`;
-                chatBox.scrollTop = chatBox.scrollHeight;
+                // 3. 新しいメッセージ要素を作成して追加（スクロール位置調整のため）
+                const newAiMsg = document.createElement('div');
+                newAiMsg.style.cssText = "align-self:flex-start; background:var(--chat-ai); padding:6px 10px; border-radius:8px; margin:2px 0; border:1px solid #333; max-width:85%; line-height:1.4;";
+                newAiMsg.innerHTML = aiAns.replace(/\n/g, '<br>');
+                chatBox.appendChild(newAiMsg);
 
-                // 履歴を蓄積
+                // ✨ 修正の要：自動で末尾に飛ばさず、新しく届いた回答の「文頭（メッセージの頭）」が見える位置に調整！
+                chatBox.scrollTop = newAiMsg.offsetTop - 10;
+
                 StoryConsultHistory.push({ role: 'user', text: userQ });
                 StoryConsultHistory.push({ role: 'model', text: aiAns });
             } catch(e) {
-                document.getElementById(loadId).innerText = "❌ エラーが発生しました。";
+                if(document.getElementById(loadId)) {
+                    document.getElementById(loadId).innerText = "❌ エラーが発生しました。";
+                }
             }
         }
 
