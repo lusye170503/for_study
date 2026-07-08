@@ -236,9 +236,9 @@
             <div class="card">
                 <h2>🎙️ 先生のキャラクターを選択</h2>
                 <div class="voice-selector">
-                    <div id="v-healer" class="voice-btn active" onclick="setVoiceMode('healer')">🌸 癒し系女性<br>(穏やか)</div>
-                    <div id="v-drew" class="voice-btn" onclick="setVoiceMode('drew')">🔥 ドリュー風<br>(元気)</div>
-                    <div id="v-meme" class="voice-btn m-voice" onclick="setVoiceMode('meme')">✨ イケボメンズ<br>(優しく穏やか)</div>
+                    <div id="v-healer" class="voice-btn active" onclick="setVoiceMode('healer')">🌸 癒し系女性<br>(おだやか)</div>
+                    <div id="v-drew" class="voice-btn" onclick="setVoiceMode('drew')">🔥 ドリュー風<br>(元気・ゆっくり)</div>
+                    <div id="v-meme" class="voice-btn m-voice" onclick="setVoiceMode('meme')">✨ イケボメンズ<br>(超ゆっくり)</div>
                 </div>
 
                 <h2>🗣 Tangled / English Chat</h2>
@@ -359,7 +359,6 @@
             if(tabId === 'phrases') renderPhrases();
         }
 
-        // 🎙️ キャラクター切り替え（Akkyに修正）
         function setVoiceMode(mode) {
             currentVoiceMode = mode;
             document.querySelectorAll('.voice-btn').forEach(btn => btn.classList.remove('active'));
@@ -381,22 +380,26 @@
             playVoice(lastAiEnglishText);
         }
 
+        // 🚨 【大改造】絶対に早口にさせない強制ブレーキ音声システム
         function playVoice(text) {
             if (!text) return;
             window.speechSynthesis.cancel();
+            
+            // 特殊文字や絵文字を綺麗にカット
             const englishClean = text.replace(/[^A-Za-z0-9'\s,\.!\\?]/g, '').trim();
             const utterance = new SpeechSynthesisUtterance(englishClean || text);
             utterance.lang = 'en-US';
 
+            // 🌟 どのモードでも全体的にがっつり速度を落とす
             if (currentVoiceMode === 'meme') {
-                utterance.pitch = 0.7; 
-                utterance.rate = 0.82;  
+                utterance.pitch = 0.65; // 低音
+                utterance.rate = 0.72;  // 超ゆっくり（標準の約3割落とし）
             } else if (currentVoiceMode === 'drew') {
-                utterance.pitch = 1.35; 
-                utterance.rate = 1.12;  
+                utterance.pitch = 1.25; // 高音で元気だけど
+                utterance.rate = 0.82;  // 喋り方はしっかり「ゆっくり」にブレーキ！
             } else {
-                utterance.pitch = 1.0;  
-                utterance.rate = 0.92;  
+                utterance.pitch = 1.0;  // 標準女性
+                utterance.rate = 0.78;  // おだやかでかなり丁寧なテンポ
             }
             
             window.speechSynthesis.speak(utterance);
@@ -440,11 +443,10 @@
             }
         }
 
-        // AIプロンプトのターゲット名を Akky に修正
         const BASE_PROMPT = 
             "You are a kind, encouraging American English coach for Akky, a beginner learner (A1-A2 level).\n" +
             "CRITICAL RULES:\n" +
-            "1. Keep your English responses short, simple, and clean (maximum 2-3 short sentences).\n" +
+            "1. Keep your English responses short, simple, and clean (maximum 2 short sentences).\n" +
             "2. Meticulously analyze Akky's input for feedback, using phonetic symbols (IPA) instead of katakana.\n" +
             "3. At the very end of your response, always provide a brief Japanese section titled [日本語の解説] explaining key idioms or pronunciation tips.";
 
@@ -475,12 +477,11 @@
             appendMessage(userText, 'user');
             inputEl.value = "";
 
-            // 👑 キャラクターごとの演技指導（Akkyに修正）
             let personaPrompt = "";
             if (currentVoiceMode === 'meme') {
                 personaPrompt = "\n[ROLEPLAY CONSTRAINT]: You are acting as 'Meme'—a very gentle, sweet, and calm handsome man. Speak with deep warmth, use comforting words, and treat Akky with utmost care and sweetness. Keep sentences short.";
             } else if (currentVoiceMode === 'drew') {
-                personaPrompt = "\n[ROLEPLAY CONSTRAINT]: You are acting as 'Drew'—an energetic, highly enthusiastic, and incredibly cheerful woman (like Drew Barrymore). Use passionate, upbeat expressions like 'Wow!', 'Awesome!', or 'You can do it, baby!' to hype Akky up!";
+                personaPrompt = "\n[ROLEPLAY CONSTRAINT]: You are acting as 'Drew'—an energetic, highly enthusiastic, and incredibly cheerful woman (like Drew Barrymore). Use passionate, upbeat expressions like 'Wow!', 'Awesome!', or 'You can do it, baby!' to hype Akky up! But keep sentences very short.";
             } else {
                 personaPrompt = "\n[ROLEPLAY CONSTRAINT]: You are acting as a gentle, serene, and relaxing female healer coach. Speak softly, peacefully, and encouragingly.";
             }
