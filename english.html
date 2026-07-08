@@ -94,7 +94,7 @@
             margin: 4px;
         }
 
-        /* 👑 ボイス選択ボタンのスタイル */
+        /* 👑 スピード選択ボタンのスタイル */
         .voice-selector {
             display: flex;
             gap: 6px;
@@ -105,20 +105,18 @@
             background-color: #252525;
             color: var(--text-muted);
             border: 1px solid #333;
-            padding: 10px 5px;
-            font-size: 0.75rem;
+            padding: 12px 5px;
+            font-size: 0.8rem;
             border-radius: 8px;
             cursor: pointer;
             text-align: center;
+            line-height: 1.3;
         }
         .voice-btn.active {
-            background-color: #3b5998;
+            background-color: #2e6930;
             color: #fff;
             border-color: var(--primary-color);
             font-weight: bold;
-        }
-        .voice-btn.active.m-voice {
-            background-color: #6a1b9a;
         }
 
         /* チャットエリア */
@@ -234,11 +232,11 @@
         <!-- 1. 英会話チャット画面 -->
         <div id="page-chat" class="page active">
             <div class="card">
-                <h2>🎙️ 先生のキャラクターを選択</h2>
+                <h2>🐢 再生スピードを選択</h2>
                 <div class="voice-selector">
-                    <div id="v-healer" class="voice-btn active" onclick="setVoiceMode('healer')">🌸 癒し系女性<br>(おだやか)</div>
-                    <div id="v-drew" class="voice-btn" onclick="setVoiceMode('drew')">🔥 ドリュー風<br>(元気・ゆっくり)</div>
-                    <div id="v-meme" class="voice-btn m-voice" onclick="setVoiceMode('meme')">✨ イケボメンズ<br>(超ゆっくり)</div>
+                    <div id="v-60" class="voice-btn active" onclick="setSpeedMode(0.60)">🐢 60%<br>(超ゆっくり)</div>
+                    <div id="v-80" class="voice-btn" onclick="setSpeedMode(0.80)">🚶‍♂️ 80%<br>(じっくり)</div>
+                    <div id="v-100" class="voice-btn" onclick="setSpeedMode(1.00)">🇺🇸 100%<br>(ナチュラル)</div>
                 </div>
 
                 <h2>🗣 Tangled / English Chat</h2>
@@ -250,7 +248,7 @@
                 </div>
 
                 <div class="chat-container" id="chat-box">
-                    <div class="msg ai" id="welcome-msg">Hi Akky! I'm your gentle teacher. Let's enjoy practicing English together at your own pace! 🌸</div>
+                    <div class="msg ai" id="welcome-msg">Hi Akky! Welcome to your room. Let's practice English together at your own pace! 🌸</div>
                 </div>
 
                 <div style="display:flex; gap:6px; margin-bottom: 6px;">
@@ -325,8 +323,8 @@
     <script>
         let ChatHistory = [];
         let PhraseBook = JSON.parse(localStorage.getItem('oru_phrases')) || [];
-        let lastAiEnglishText = "Hi Akky! Ready to practice? Let's enjoy practicing English together!";
-        let currentVoiceMode = 'healer';
+        let lastAiEnglishText = "Hi Akky! Welcome to your room. Let's practice English together at your own pace!";
+        let currentSpeechRate = 0.60;
 
         let recognition = null;
         let isRecognizing = false;
@@ -359,48 +357,29 @@
             if(tabId === 'phrases') renderPhrases();
         }
 
-        function setVoiceMode(mode) {
-            currentVoiceMode = mode;
+        // ⏱️ スピード変更の制御
+        function setSpeedMode(rate) {
+            currentSpeechRate = rate;
             document.querySelectorAll('.voice-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById('v-' + mode).classList.add('active');
             
-            const welcomeMsg = document.getElementById('welcome-msg');
-            
-            if(mode === 'healer') {
-                lastAiEnglishText = "Hi Akky! I'm your gentle teacher. Let's relax and enjoy English. You are doing great.";
-                welcomeMsg.innerHTML = lastAiEnglishText + " 🌸";
-            } else if(mode === 'drew') {
-                lastAiEnglishText = "Hey Akky! Let's get started! You can do it! Show me what you got, baby!";
-                welcomeMsg.innerHTML = lastAiEnglishText + " 🔥🚀";
-            } else if(mode === 'meme') {
-                lastAiEnglishText = "Hi Akky. Don't worry, take your time. I'm right here with you. Let's try together.";
-                welcomeMsg.innerHTML = lastAiEnglishText + " ✨🤵‍♂️";
-            }
+            if (rate === 0.60) document.getElementById('v-60').classList.add('active');
+            if (rate === 0.80) document.getElementById('v-80').classList.add('active');
+            if (rate === 1.00) document.getElementById('v-100').classList.add('active');
             
             playVoice(lastAiEnglishText);
         }
 
-        // 🚨 【大改造】絶対に早口にさせない強制ブレーキ音声システム
+        // 🔊 指定されたパーセントの速度で喋らせるコア機能
         function playVoice(text) {
             if (!text) return;
             window.speechSynthesis.cancel();
             
-            // 特殊文字や絵文字を綺麗にカット
             const englishClean = text.replace(/[^A-Za-z0-9'\s,\.!\\?]/g, '').trim();
             const utterance = new SpeechSynthesisUtterance(englishClean || text);
             utterance.lang = 'en-US';
-
-            // 🌟 どのモードでも全体的にがっつり速度を落とす
-            if (currentVoiceMode === 'meme') {
-                utterance.pitch = 0.65; // 低音
-                utterance.rate = 0.72;  // 超ゆっくり（標準の約3割落とし）
-            } else if (currentVoiceMode === 'drew') {
-                utterance.pitch = 1.25; // 高音で元気だけど
-                utterance.rate = 0.82;  // 喋り方はしっかり「ゆっくり」にブレーキ！
-            } else {
-                utterance.pitch = 1.0;  // 標準女性
-                utterance.rate = 0.78;  // おだやかでかなり丁寧なテンポ
-            }
+            
+            utterance.pitch = 1.0;  // 自然な女性の声
+            utterance.rate = currentSpeechRate; // 0.60, 0.80, 1.00 をそのまま適用
             
             window.speechSynthesis.speak(utterance);
         }
@@ -453,7 +432,7 @@
         async function suggestTheme() {
             const apiKey = localStorage.getItem('gemini_api_key');
             if(!apiKey) return alert("⚙️タブからAPIキーを登録してください");
-            const prompt = "あっきーさんの大好きなテーマ（Snow Man、料理、愛猫、プロのタロット占い、アメリカドラマ、DUO Basic）から、トークするお題を、英語1文と日本語1文で「〜について話そう！」と、1つだけ提案してください。";
+            const prompt = "あっきーさんの大好きなテーマ（Snow Man、料理、愛猫、プロのタロット占い、アメリカドラマ、DUO Basic）から、トークするお題を、英語1文と日本語1文で「〜について話そう！」と, 1つだけ提案してください。";
             try {
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
                     method: 'POST',
@@ -477,17 +456,8 @@
             appendMessage(userText, 'user');
             inputEl.value = "";
 
-            let personaPrompt = "";
-            if (currentVoiceMode === 'meme') {
-                personaPrompt = "\n[ROLEPLAY CONSTRAINT]: You are acting as 'Meme'—a very gentle, sweet, and calm handsome man. Speak with deep warmth, use comforting words, and treat Akky with utmost care and sweetness. Keep sentences short.";
-            } else if (currentVoiceMode === 'drew') {
-                personaPrompt = "\n[ROLEPLAY CONSTRAINT]: You are acting as 'Drew'—an energetic, highly enthusiastic, and incredibly cheerful woman (like Drew Barrymore). Use passionate, upbeat expressions like 'Wow!', 'Awesome!', or 'You can do it, baby!' to hype Akky up! But keep sentences very short.";
-            } else {
-                personaPrompt = "\n[ROLEPLAY CONSTRAINT]: You are acting as a gentle, serene, and relaxing female healer coach. Speak softly, peacefully, and encouragingly.";
-            }
-
             const theme = document.getElementById('chat-theme').value.trim();
-            let contextPrompt = BASE_PROMPT + personaPrompt;
+            let contextPrompt = BASE_PROMPT;
             if(theme) contextPrompt += `\n[Current Theme]: ${theme}`;
 
             let contentsPayload = [{ parts: [{ text: contextPrompt }] }];
